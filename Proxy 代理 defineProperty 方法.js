@@ -1,5 +1,4 @@
 const obj = {}
-
 const handler = {
     /**
      * 拦截对代理对象的 Object.defineProperty() 操作
