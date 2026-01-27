@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>仿 Vue3 的响应式原理</title>
+</head>
+<body>
+<!-- 渲染容器 -->
+<div id="app">{{ a }} + {{ b }} = {{ c }}</div>
+<button type="button" id="increment-a">a++</button>
+<button type="button" id="subtraction-a">a--</button>
+<button type="button" id="increment-b">b++</button>
+<button type="button" id="subtraction-b">b--</button>
+</body>
+</html>
+<script>
+    const elContainer = document.querySelector('#app');
+    const tpl = elContainer.innerHTML;
+    const btnIncrementA = document.querySelector('#increment-a');
+    const btnIncrementB = document.querySelector('#increment-b');
+    const btnSubtractionA = document.querySelector('#subtraction-a');
+    const btnSubtractionB = document.querySelector('#subtraction-b');
+
+    // 渲染方法
+    function render() {
+        // /{{\s*([^{}]+?)\s*}}/ 匹配出 {{ a }} 格式的内容
+        const html = tpl.replace(/{{\s*([^{}]+?)\s*}}/g, (substring) => {
+            // 取出这里的属性
+            const key = substring.replace(/[{}\s]/g, '');
+            return flag[key]?.value ?? '';
+        })
+
+        elContainer.innerHTML = html;
+    }
+
+    /**
+     * 转成代理
+     * @param value
+     * @returns {{value: *}|*|boolean}
+     */
+    function ref(value) {
+        const obj = {
+            value
+        }
+
+        const handler = {
+            get(target, key) {
+                return target[key];
+            },
+            set(target, key, newVal) {
+                if (key === 'value') {
+                    if (newVal === target[value]) {
+                        console.warn('set', '设置同样的值');
+                    }
+                    else {
+                        target[key] = newVal;
+                        render();
+                    }
+                }
+                else {
+                    throw new Error('只能用 value');
+                }
+
+                return true;
+            }
+        }
+        return new Proxy(obj, handler);
+    }
+
+    const a = ref(0);
+    const b = ref(0);
+    const c = ref(0);
+    const flag = {
+        a,
+        b,
+        c
+    }
+    // 初始化渲染
+    render();
+
+    btnIncrementA.addEventListener('click', () => {
+        a.value++;
+        c.value = a.value + b.value;
+    })
+
+    btnSubtractionA.addEventListener('click', () => {
+        a.value--;
+        c.value = a.value + b.value;
+    })
+
+    btnIncrementB.addEventListener('click', () => {
+        b.value++;
+        c.value = a.value + b.value;
+    })
+
+    btnSubtractionB.addEventListener('click', () => {
+        b.value--;
+        c.value = a.value + b.value;
+    })
+</script>

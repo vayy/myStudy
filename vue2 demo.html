@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vue2 demo</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.7.12/vue.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <div>{{ message }}</div>
+    <button type="button" @click="print">打印</button>
+</div>
+</body>
+</html>
+<script>
+    const app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                message: '这是 Vue2 的一个小小的 demo',
+                a: {
+                    b: 1
+                }
+            }
+        },
+        methods: {
+            print() {
+                console.log(this.a);
+            }
+        }
+    })
+</script>

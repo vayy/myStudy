@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>仿 Vue2 响应式原理</title>
+</head>
+<body>
+<!-- 容器 -->
+<div id="app"></div>
+
+<button type="button" id="increment-a">a++</button>
+<button type="button" id="subtraction-a">a--</button>
+<button type="button" id="increment-b">b++</button>
+<button type="button" id="subtraction-b">b--</button>
+</body>
+</html>
+<script>
+    // 模板
+    const htmlTpl = '<p>{{ a }} - {{ b }}</p>';
+    const btnIncrementA = document.querySelector('#increment-a');
+    const btnIncrementB = document.querySelector('#increment-b');
+    const btnSubtractionA = document.querySelector('#subtraction-a');
+    const btnSubtractionB = document.querySelector('#subtraction-b');
+    const elContainer = document.querySelector('#app');
+
+    // 数据
+    const data = {
+        a: 1,
+        b: 2
+    }
+
+    /**
+     * 渲染函数
+     * @param obj
+     * @param template
+     * @param container
+     */
+    function render(obj, template, container) {
+        // /{{\s*([^{}]+?)\s*}}/ 匹配出 {{ a }} 格式的内容
+        const html = template.replace(/{{\s*([^{}]+?)\s*}}/g, (substring) => {
+            // 取出这里的属性
+            const key = substring.replace(/[{}\s]/g, '');
+            return obj[key] ?? '';
+        })
+
+        container.innerHTML = html;
+    }
+
+
+    /**
+     * 转成响应式
+     * @param obj
+     * @param template
+     * @param container
+     * @returns {*}
+     */
+    function toReactive(obj, template, container) {
+        const copy = { ...obj }
+        for (let key in obj) {
+            Object.defineProperty(obj, key, {
+                set(newVal) {
+                    copy[key] = newVal;
+                    render(copy, template, container);
+                },
+                get() {
+                    return copy[key];
+                }
+            })
+        }
+    }
+
+    toReactive(data, htmlTpl, elContainer);
+    render(data, htmlTpl, elContainer);
+
+    btnIncrementA.addEventListener('click', () => {
+        data.a++;
+    }, false);
+
+    btnSubtractionA.addEventListener('click', () => {
+        data.a--;
+    }, false)
+
+    btnIncrementB.addEventListener('click', () => {
+        data.b++;
+    }, false)
+
+    btnSubtractionB.addEventListener('click', () => {
+        data.b--;
+    })
+</script>
